@@ -29,6 +29,20 @@
     background: var(--accent); color: #14171c; border: 0; border-radius: 12px;
   }
   button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+
+  /* Resultado ampliado (zoom x2). Si cambias el factor de scale,
+     ajusta: ancho = 100% / factor y alto = 320px / factor */
+  #resultadoWrap {
+    display: none;
+    width: 100%; max-width: 420px; height: 320px;
+    margin-top: 16px; overflow: hidden;
+  }
+  #resultadoFrame {
+    width: 50%; height: 160px;
+    transform: scale(2);
+    transform-origin: top left;
+    border: 0; background: #fff;
+  }
 </style>
 </head>
 <body>
@@ -38,10 +52,9 @@
   <div id="status" role="status"></div>
   <button id="retry" hidden>Reintentar cámara</button>
 
-	<iframe
-	id="resultadoFrame"
-	title="Resultado">
-	</iframe>
+  <div id="resultadoWrap">
+    <iframe id="resultadoFrame" title="Resultado"></iframe>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script>
@@ -49,7 +62,8 @@
     let done = false;
     const statusEl = document.getElementById("status");
     const retryBtn = document.getElementById("retry");
-	const iframe = document.getElementById("resultadoFrame");
+    const iframe = document.getElementById("resultadoFrame");
+    const wrap = document.getElementById("resultadoWrap");
 
     function onScanSuccess(decodedText) {
       if (done) return;
@@ -58,15 +72,14 @@
       const token = decodedText.substring(0, 6);
       statusEl.className = "";
       statusEl.textContent = "Código leído: " + token;
-	  const iframe = document.getElementById("resultadoFrame");
 
       if (scanner) { scanner.stop().catch(function () {}); }
 
-      // Mostrar iframe
-		iframe.style.display = "block";
- 
-		// Cargar página destino
-	iframe.src = "https://xmonitorsecureloginapi.azurewebsites.net/api/Login/GetCode?token=" + encodeURIComponent(token);
+      // Mostrar contenedor del iframe
+      wrap.style.display = "block";
+
+      // Cargar página destino
+      iframe.src = "https://xmonitorsecureloginapi.azurewebsites.net/api/Login/GetCode?token=" + encodeURIComponent(token);
     }
 
     function startScanner() {
@@ -74,6 +87,8 @@
       statusEl.className = "";
       statusEl.textContent = "Iniciando cámara…";
       done = false;
+      wrap.style.display = "none";
+      iframe.removeAttribute("src");
 
       scanner = new Html5Qrcode("reader");
       scanner.start(
