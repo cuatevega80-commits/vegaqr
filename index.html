@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Escanear código QR</title>
+<title>Escanear código QR V2</title>
 <style>
   :root { --bg:#14171c; --fg:#f2f4f7; --muted:#9aa3b0; --accent:#e8b923; }
   * { box-sizing: border-box; }
@@ -51,7 +51,6 @@
   <div id="reader"></div>
   <div id="status" role="status"></div>
   <button id="retry" hidden>Reintentar cámara</button>
-  <button id="again" hidden>Escanear otro código</button>
 
   <div id="resultadoWrap">
     <iframe id="resultadoFrame" title="Resultado"></iframe>
@@ -65,7 +64,6 @@
     const retryBtn = document.getElementById("retry");
     const iframe = document.getElementById("resultadoFrame");
     const wrap = document.getElementById("resultadoWrap");
-    const againBtn = document.getElementById("again");
 
     function onScanSuccess(decodedText) {
       if (done) return;
@@ -77,9 +75,8 @@
 
       if (scanner) { scanner.stop().catch(function () {}); }
 
-      // Mostrar contenedor del iframe y botón para escanear otro
+      // Mostrar contenedor del iframe
       wrap.style.display = "block";
-      againBtn.hidden = false;
 
       // Cargar página destino
       iframe.src = "https://xmonitorsecureloginapi.azurewebsites.net/api/Login/GetCode?token=" + encodeURIComponent(token);
@@ -87,7 +84,6 @@
 
     function startScanner() {
       retryBtn.hidden = true;
-      againBtn.hidden = true;
       statusEl.className = "";
       statusEl.textContent = "Iniciando cámara…";
       done = false;
@@ -109,16 +105,7 @@
       });
     }
 
-    function restartScanner() {
-      const prev = scanner;
-      const stopped = prev
-        ? prev.stop().catch(function () {}).then(function () { try { prev.clear(); } catch (e) {} })
-        : Promise.resolve();
-      stopped.then(startScanner);
-    }
-
-    retryBtn.addEventListener("click", restartScanner);
-    againBtn.addEventListener("click", restartScanner);
+    retryBtn.addEventListener("click", startScanner);
     startScanner();
   </script>
 </body>
